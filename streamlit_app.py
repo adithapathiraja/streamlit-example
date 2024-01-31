@@ -1,40 +1,53 @@
-import altair as alt
-import numpy as np
-import pandas as pd
 import streamlit as st
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import pandas as pd
 
-"""
-# Welcome to Streamlit!
+def main():
+    # Sample DataFrame (replace this with your own data)
+    df = pd.DataFrame({
+        'Timestamp': pd.date_range(start='2022-01-01', periods=100, freq='D'),
+        'Power_Output': [val + 10 * (0.5 - i/100) for i, val in enumerate(range(100))],
+        'Solar_Irradiance': [val + 5 * (0.5 - i/100) for i, val in enumerate(range(100))],
+        'Date': pd.date_range(start='2022-01-01', periods=100, freq='D').date
+    })
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+    # Create an interactive subplot
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+    # Add traces for power output and solar irradiance
+    fig.add_trace(go.Scatter(x=df['Timestamp'], y=df['Power_Output'], name='Power Output (MW)', line=dict(color='blue')), secondary_y=False)
+    fig.add_trace(go.Scatter(x=df['Timestamp'], y=df['Solar_Irradiance'], name='Solar Irradiance (Wm^-2)', line=dict(color='orange')), secondary_y=True)
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
+    fig.update_layout(legend=dict(x=0.55, y=1.18, orientation='h'))
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
+    # Update layout
+    fig.update_layout(title='<b>Variation of Solar Irradiance and Power Plant Output with time',
+                      xaxis_title='Timestamp',
+                      yaxis_title='Power Output (MW)',
+                      yaxis2_title='Solar Irradiance (Wm^-2)',
+                      xaxis_rangeslider_visible=True)
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
+    # Streamlit app
+    st.title("Solar Power Plant Dashboard")
 
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
+    # Introduction column
+    st.sidebar.markdown("# Introduction")
+    st.sidebar.write("Welcome to the Solar Power Plant Dashboard! This dashboard provides visualizations of power output and solar irradiance over time.")
 
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+    # Tabs for visualizations
+    tabs = ["Tab 1", "Tab 2", "Tab 3", "Tab 4", "Tab 5"]
+    selected_tab = st.sidebar.radio("Select Tab", tabs)
+
+    if selected_tab == "Tab 1":
+        # Visualizations for Tab 1
+        st.plotly_chart(fig)
+
+    elif selected_tab == "Tab 2":
+        # Visualizations for Tab 2
+        st.write("Visualization for Tab 2 goes here.")
+
+    # Repeat the above pattern for other tabs...
+
+if __name__ == "__main__":
+    main()
